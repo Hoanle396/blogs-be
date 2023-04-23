@@ -19,8 +19,8 @@ import { CreateBlogDto } from './dto/create-blog.dto'
 import { UpdateBlogDto } from './dto/update-blog.dto'
 import { CreateCommentDto } from './dto/create-comment.dto'
 
-@ApiTags('/blogs')
-@Controller('blogs')
+@ApiTags('/api/blogs')
+@Controller('/api/blogs')
 export class BlogsController {
   constructor(private readonly blogsService: BlogsService) {}
 
