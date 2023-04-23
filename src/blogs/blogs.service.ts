@@ -1,4 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common'
+
 import { CreateBlogDto } from './dto/create-blog.dto'
 import { UpdateBlogDto } from './dto/update-blog.dto'
 import { Users } from '@/models/users.entity'
@@ -62,9 +63,26 @@ export class BlogsService {
   }
 
   async remove(id: number) {
-    const blog = await this.blogsRepository.findOneBy({ id })
+const blog = await this.blogsRepository.findOne({
+  where: { id },
+  relations: {
+    createdBy: true,
+    comments: {
+      createBy: true
+    }
+  }
+})
+
     if (blog) {
-      return await this.blogsRepository.delete(+id)
+try {
+  await Promise.all(
+    blog.comments.map(async comments => await this.commentRepository.remove(comments))
+  )
+  return await this.blogsRepository.remove(blog)
+} catch {
+  throw new InternalServerErrorException()
+}
+
     }
     throw new NotFoundException()
   }
@@ -84,12 +102,26 @@ export class BlogsService {
   async findComment(id: number, take, skip) {
     const blog = await this.blogsRepository.findOneBy({ id })
     if (blog) {
-      return await this.commentRepository.findAndCount({
+      const [rows, count] = await this.commentRepository.findAndCount({
         where: { blogs: { id: blog.id } },
         relations: { createBy: true },
         take,
         skip
       })
+      return { rows, count }
+    }
+    throw new NotFoundException()
+  }
+
+  async removeComment(id: number) {
+    const comment = await this.commentRepository.findOneBy({id})
+
+    if (comment) {
+      try {
+        return await this.commentRepository.remove(comment)
+      } catch {
+        throw new InternalServerErrorException()
+      }
     }
     throw new NotFoundException()
   }

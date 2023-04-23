@@ -49,6 +49,14 @@ export class BlogsController {
     return await this.blogsService.findComment(+id, take, skip)
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Roles(Role.Admin)
+  @Delete('comment/:id')
+  async removeComment(@Param('id') id: string) {
+    return await this.blogsService.removeComment(+id)
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return await this.blogsService.findOne(+id)

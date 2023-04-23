@@ -1,6 +1,7 @@
 import { Role } from '@/enums/role'
 import { Users } from '@/models/users.entity'
-import { BadRequestException, Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
+
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { CreateUserDto } from './dto/create-user.dto'
@@ -33,5 +34,13 @@ export class UsersService {
 
   async remove(id: number) {
     return await this.userRepository.delete(id)
+  }
+
+  async update(id: number, updateBlogDto: CreateUserDto) {
+    const user = await this.userRepository.findOneBy({ id })
+    if (user) {
+      return await this.userRepository.update(+id, updateBlogDto)
+    }
+    throw new NotFoundException()
   }
 }

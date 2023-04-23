@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Get, Param, Post, Query, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common'
+
 import { UsersService } from './users.service'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { Roles } from '@/enums/decorator'
@@ -6,8 +7,8 @@ import { Role } from '@/enums/role'
 import { JwtAuthGuard } from '@/auth/jwt-auth.guard'
 import { CreateUserDto } from './dto/create-user.dto'
 
-@ApiTags('users')
-@Controller('users')
+@ApiTags('/api/users')
+@Controller('/api/users')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Roles(Role.Admin)
@@ -25,12 +26,15 @@ export class UsersController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id)
+  async findOne(@Param('id') id: string) {
+    return await this.usersService.findOne(+id)
   }
-
+  @Patch(':id')
+  async update(@Param('id') id: string, @Body() updateUserDto: CreateUserDto) {
+    return await this.usersService.update(+id, updateUserDto)
+  }
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id)
+  async remove(@Param('id') id: string) {
+    return await this.usersService.remove(+id)
   }
 }
